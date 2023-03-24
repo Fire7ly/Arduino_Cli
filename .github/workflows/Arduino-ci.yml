@@ -20,6 +20,7 @@ jobs:
         run: |
           arduino-cli core update-index --additional-urls 'https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json'
           arduino-cli core install ${{ matrix.core_a }}:${{ matrix.core_b }} --additional-urls 'https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json,http://arduino.esp8266.com/stable/package_esp8266com_index.json'
+          ls -la
       - name: Compile Sketch
         working-directory: ./
         run: ARDUINO_DIRECTORIES_USER=$GITHUB_WORKSPACE arduino-cli compile -b ${{ matrix.core_a }}:${{ matrix.core_b }}:${{ matrix.board }}:${{ matrix.opts }} -e --build-property="compiler.cpp.extra_flags=\"-DAPN_${{ matrix.apn }}\""
