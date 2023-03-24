@@ -18,7 +18,7 @@ jobs:
         uses: arduino/setup-arduino-cli@v1.1.1
       - name: Install platform
         run: |
-          arduino-cli core update-index  --config-file $GITHUB_WORKSPACE/package_esp32_index.json
+          arduino-cli core update-index --config-file $GITHUB_WORKSPACE/package_esp32_index.json
           arduino-cli core install ESP32:ESP32 --config-file $GITHUB_WORKSPACE/package_esp32_index.json
           ls -la
       - name: Compile Sketch
