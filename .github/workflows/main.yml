@@ -14,32 +14,102 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Find and Prepare Sketch
+        id: sketch
+        run: |
+          chmod +x .github/scripts/prepare_sketch.sh
+          .github/scripts/prepare_sketch.sh
+
+      - name: Map Board Configuration
+        id: config
+        run: |
+          chmod +x .github/scripts/map_board.sh
+          .github/scripts/map_board.sh
+
+      - name: Display Configuration
+        run: |
+          echo "╔══════════════════════════════════════════════════════════════╗"
+          echo "║              📋 BUILD CONFIGURATION                          ║"
+          echo "╚══════════════════════════════════════════════════════════════╝"
+          echo ""
+          echo "🎯 Board Settings:"
+          echo "   Board (config) : ${{ steps.config.outputs.board }}"
+          echo "   Board Name     : ${{ steps.config.outputs.board_name }}"
+          echo "   FQBN           : ${{ steps.config.outputs.fqbn }}"
+          echo "   Platform       : ${{ steps.config.outputs.platform }}"
+          echo ""
+          echo "📄 Sketch Settings:"
+          echo "   Sketch Name    : ${{ steps.sketch.outputs.sketch_name }}"
+          echo "   Sketch Path    : ${{ steps.sketch.outputs.sketch_path }}"
+
       - name: Setup Arduino CLI
         uses: arduino/setup-arduino-cli@v2
 
-      - name: Install ESP32 Platform
+      - name: Install Platform
+        id: install
         run: |
           arduino-cli config init
-          arduino-cli config add board_manager.additional_urls https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+          if [ -n "${{ steps.config.outputs.platform_url }}" ]; then
+            arduino-cli config add board_manager.additional_urls "${{ steps.config.outputs.platform_url }}"
+          fi
           arduino-cli core update-index
-          arduino-cli core install esp32:esp32
+          arduino-cli core install ${{ steps.config.outputs.platform }}
+          
+          # Get installed versions
+          PLATFORM_VERSION=$(arduino-cli core list | grep "${{ steps.config.outputs.platform }}" | awk '{print $2}')
+          CLI_VERSION=$(arduino-cli version | head -1)
+          echo "platform_version=$PLATFORM_VERSION" >> $GITHUB_OUTPUT
+          echo "cli_version=$CLI_VERSION" >> $GITHUB_OUTPUT
 
       - name: Compile Sketch
+        id: compile
         run: |
+          START_TIME=$(date +%s)
+          mkdir -p ./build
+          
           arduino-cli compile \
-            --fqbn esp32:esp32:esp32 \
+            --fqbn ${{ steps.config.outputs.fqbn }} \
             --output-dir ./build \
-            .
+            --verbose \
+            ${{ steps.sketch.outputs.sketch_path }} 2>&1 | tee ./build/compile_log.txt
+          
+          END_TIME=$(date +%s)
+          COMPILE_TIME=$((END_TIME - START_TIME))
+          echo "compile_time=${COMPILE_TIME}s" >> $GITHUB_OUTPUT
+
+      - name: Generate Build Info
+        run: |
+          chmod +x .github/scripts/generate_build_info.sh
+          .github/scripts/generate_build_info.sh \
+            "${{ steps.compile.outputs.compile_time }}" \
+            "${{ steps.sketch.outputs.sketch_name }}" \
+            "${{ steps.sketch.outputs.sketch_path }}" \
+            "${{ steps.sketch.outputs.ino_file }}" \
+            "${{ steps.config.outputs.board }}" \
+            "${{ steps.config.outputs.board_name }}" \
+            "${{ steps.config.outputs.fqbn }}" \
+            "${{ steps.config.outputs.platform }}" \
+            "${{ steps.install.outputs.platform_version }}" \
+            "${{ steps.config.outputs.platform_url }}" \
+            "${{ steps.install.outputs.cli_version }}" \
+            "${{ steps.config.outputs.artifact }}-${{ github.sha }}" \
+            "${{ steps.config.outputs.retention }}"
 
       - name: List Build Output
-        run: ls -la ./build/
+        run: |
+          echo "📁 Build Output Files:"
+          ls -la ./build/
 
-      - name: Upload Binary Artifact
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Arduino-Binary-${{ github.sha }}
+          name: ${{ steps.config.outputs.artifact }}-${{ github.sha }}
           path: |
             ./build/*.bin
             ./build/*.elf
-          retention-days: 30
+            ./build/*.hex
+            ./build/BUILD_INFO.txt
+            ./build/build_info.json
+            ./build/compile_log.txt
+          retention-days: ${{ steps.config.outputs.retention }}
           if-no-files-found: error

@@ -1,0 +1,6 @@
+{
+  "board": "esp32",
+  "sketch_path": ".",
+  "artifact_name": "Arduino-Binary",
+  "retention_days": 30
+}
