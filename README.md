@@ -225,6 +225,7 @@ The `build.config.json` file is super simple:
 ```json
 {
   "board": "esp32", // ← Just type the board name!
+  "board_version": "latest", // ← Optional: "latest" or specific version "2.0.14"
   "sketch_path": ".", // ← Where your .ino file is
   "artifact_name": "Arduino-Binary", // ← Download file name
   "retention_days": 30 // ← Days to keep the file

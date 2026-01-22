@@ -34,6 +34,7 @@ jobs:
           echo ""
           echo "🎯 Board Settings:"
           echo "   Board (config) : ${{ steps.config.outputs.board }}"
+          echo "   Board Version  : ${{ steps.config.outputs.board_version }}"
           echo "   Board Name     : ${{ steps.config.outputs.board_name }}"
           echo "   FQBN           : ${{ steps.config.outputs.fqbn }}"
           echo "   Platform       : ${{ steps.config.outputs.platform }}"
@@ -53,7 +54,7 @@ jobs:
             arduino-cli config add board_manager.additional_urls "${{ steps.config.outputs.platform_url }}"
           fi
           arduino-cli core update-index
-          arduino-cli core install ${{ steps.config.outputs.platform }}
+          arduino-cli core install ${{ steps.config.outputs.platform_install }}
           
           # Get installed versions
           PLATFORM_VERSION=$(arduino-cli core list | grep "${{ steps.config.outputs.platform }}" | awk '{print $2}')
@@ -93,7 +94,8 @@ jobs:
             "${{ steps.config.outputs.platform_url }}" \
             "${{ steps.install.outputs.cli_version }}" \
             "${{ steps.config.outputs.artifact }}-${{ github.sha }}" \
-            "${{ steps.config.outputs.retention }}"
+            "${{ steps.config.outputs.retention }}" \
+            "${{ steps.config.outputs.board_version }}"
 
       - name: List Build Output
         run: |

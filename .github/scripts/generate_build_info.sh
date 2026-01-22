@@ -17,6 +17,7 @@ PLATFORM_URL="${10:-unknown}"
 CLI_VERSION="${11:-unknown}"
 ARTIFACT_NAME="${12:-unknown}"
 RETENTION_DAYS="${13:-30}"
+BOARD_VERSION_CONFIG="${14:-latest}"
 
 mkdir -p ./build
 
@@ -51,6 +52,7 @@ cat > ./build/BUILD_INFO.txt << EOF
 🎯 BOARD CONFIGURATION
 ────────────────────────────────────────────────────────────────────
   Board (Config)  : $BOARD
+  Board Version   : $BOARD_VERSION_CONFIG
   Board Name      : $BOARD_NAME
   FQBN            : $FQBN
   Platform        : $PLATFORM
@@ -97,6 +99,7 @@ cat > ./build/build_info.json << EOF
   },
   "board": {
     "config_name": "$BOARD",
+    "config_version": "$BOARD_VERSION_CONFIG",
     "full_name": "$BOARD_NAME",
     "fqbn": "$FQBN",
     "platform": "$PLATFORM",
