@@ -29,7 +29,7 @@ jobs:
             -b ESP32:ESP32:ESP:pnum=NUCLEO_F767ZI,upload_method=MassStorage,xserial=generic,usb=none,xusb=FS,opt=osstd,rtlib=nano \
             -e \
             --output-dir ./build \
-            Hello_World.ino
+            .
 
       - name: Upload Binary Artifact
         uses: actions/upload-artifact@v4
