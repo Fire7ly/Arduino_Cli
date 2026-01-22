@@ -8,8 +8,8 @@ BOARD=$(jq -r '.board' build.config.json)
 ARTIFACT=$(jq -r '.artifact_name // "Arduino-Binary"' build.config.json)
 RETENTION=$(jq -r '.retention_days // 30' build.config.json)
 
-# Convert friendly name to lowercase for matching
-BOARD_LOWER=$(echo "$BOARD" | tr '[:upper:]' '[:lower:]' | tr -d ' -_')
+# Convert friendly name to lowercase for matching (remove spaces, hyphens, underscores)
+BOARD_LOWER=$(echo "$BOARD" | tr '[:upper:]' '[:lower:]' | tr -d ' ' | tr -d '_' | tr -d '-')
 
 echo "🎯 Mapping board: $BOARD -> $BOARD_LOWER"
 

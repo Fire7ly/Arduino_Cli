@@ -43,18 +43,23 @@ Your project folder looks like this:
 ```
 📁 Arduino_Cli/
 ├── 📁 .github/
+│   ├── 📁 scripts/               ← 🔧 Build helper scripts
+│   │   ├── 📄 prepare_sketch.sh
+│   │   ├── 📄 map_board.sh
+│   │   └── 📄 generate_build_info.sh
 │   └── 📁 workflows/
-│       └── 📄 main.yml         ← 🤖 The robot instructions
-├── 📄 Arduino_Cli.ino          ← ✏️ Your Arduino code
-├── 📄 build.config.json        ← ⚙️ Settings file (edit this!)
-├── 📄 README.md                ← 📖 This tutorial!
+│       └── 📄 main.yml           ← 🤖 The robot instructions
+├── 📄 Arduino_Cli.ino            ← ✏️ Your Arduino code
+├── 📄 build.config.json          ← ⚙️ Settings file (edit this!)
+├── 📄 README.md                  ← 📖 This tutorial!
 ```
 
 | File                | What It Does                                     |
 | ------------------- | ------------------------------------------------ |
 | `build.config.json` | ⚙️ **Settings file** - change board/options here |
 | `Arduino_Cli.ino`   | Your actual Arduino program                      |
-| `main.yml`          | Robot instructions (don't edit this!)            |
+| `.github/scripts/`  | Helper scripts (auto-find sketch, map boards)    |
+| `main.yml`          | Workflow file (don't edit this!)                 |
 
 ---
 
