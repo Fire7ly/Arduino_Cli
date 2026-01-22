@@ -1,33 +1,43 @@
-name: Build
-on: [push, pull_request]
+
+name: Build and Upload Artifact
+
+on:
+  push:
+    branches:
+      - master
+
 jobs:
   build:
-    # strategy:
-      # matrix:
-      #   core_a: ["ESP32"]
-      #   core_b: ["ESP8266"]
-      #   board: ["ESP32"]
-      #   opts: ["pnum=NUCLEO_F767ZI,upload_method=MassStorage,xserial=generic,usb=none,xusb=FS,opt=osstd,rtlib=nano"]
-      #   apn: ["X", "Y", "Z"]
-    name: Build
+    name: Build Arduino Sketch
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@master
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
       - name: Setup Arduino CLI
-        uses: arduino/setup-arduino-cli@v1.1.1
-      - name: Install platform
+        uses: arduino/setup-arduino-cli@v2
+
+      - name: Install Platform
         run: |
-          arduino-cli core update-index --config-file $GITHUB_WORKSPACE/package_esp32_index.json
-          arduino-cli core install ESP32:ESP32 --config-file $GITHUB_WORKSPACE/package_esp32_index.json
-          ls -la
+          arduino-cli core update-index --additional-urls file://$GITHUB_WORKSPACE/package_esp32_index.json
+          arduino-cli core install ESP32:ESP32 --additional-urls file://$GITHUB_WORKSPACE/package_esp32_index.json
+
       - name: Compile Sketch
-        working-directory: ./
-        run: ARDUINO_DIRECTORIES_USER=$GITHUB_WORKSPACE arduino-cli compile -b ESP32:ESP32:ESP:pnum=NUCLEO_F767ZI,upload_method=MassStorage,xserial=generic,usb=none,xusb=FS,opt=osstd,rtlib=nano 
-        # -e --build-property="compiler.cpp.extra_flags=\"-DAPN_${{ matrix.apn }}\""
-      - name: Upload bin
-        uses: actions/upload-artifact@v2
+        run: |
+          ARDUINO_DIRECTORIES_USER=$GITHUB_WORKSPACE arduino-cli compile \
+            -b ESP32:ESP32:ESP:pnum=NUCLEO_F767ZI,upload_method=MassStorage,xserial=generic,usb=none,xusb=FS,opt=osstd,rtlib=nano \
+            -e \
+            --output-dir ./build \
+            Hello_World.ino
+
+      - name: Upload Binary Artifact
+        uses: actions/upload-artifact@v4
         with:
-          # name: ${{ matrix.core_a}}_${{ matrix.core_b }}_${{ matrix.board }}_${{ matrix.apn }}
-          name: Artifact
-          path: ./build/Hello_World.ino.bin
+          name: Arduino-Binary-${{ github.sha }}
+          path: |
+            ./build/*.bin
+            ./build/*.elf
+            ./build/*.hex
+          retention-days: 30
+          if-no-files-found: error
