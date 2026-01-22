@@ -1,4 +1,3 @@
-
 name: Build and Upload Artifact
 
 on:
@@ -18,18 +17,22 @@ jobs:
       - name: Setup Arduino CLI
         uses: arduino/setup-arduino-cli@v2
 
-      - name: Install Platform
+      - name: Install ESP32 Platform
         run: |
-          arduino-cli core update-index --additional-urls file://$GITHUB_WORKSPACE/package_esp32_index.json
-          arduino-cli core install ESP32:ESP32 --additional-urls file://$GITHUB_WORKSPACE/package_esp32_index.json
+          arduino-cli config init
+          arduino-cli config add board_manager.additional_urls https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+          arduino-cli core update-index
+          arduino-cli core install esp32:esp32
 
       - name: Compile Sketch
         run: |
-          ARDUINO_DIRECTORIES_USER=$GITHUB_WORKSPACE arduino-cli compile \
-            -b ESP32:ESP32:ESP:pnum=NUCLEO_F767ZI,upload_method=MassStorage,xserial=generic,usb=none,xusb=FS,opt=osstd,rtlib=nano \
-            -e \
+          arduino-cli compile \
+            --fqbn esp32:esp32:esp32 \
             --output-dir ./build \
             .
+
+      - name: List Build Output
+        run: ls -la ./build/
 
       - name: Upload Binary Artifact
         uses: actions/upload-artifact@v4
@@ -38,6 +41,5 @@ jobs:
           path: |
             ./build/*.bin
             ./build/*.elf
-            ./build/*.hex
           retention-days: 30
           if-no-files-found: error
