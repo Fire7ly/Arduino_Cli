@@ -1,0 +1,43 @@
+
+name: Build and Upload Artifact
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Build Arduino Sketch
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Arduino CLI
+        uses: arduino/setup-arduino-cli@v2
+
+      - name: Install Platform
+        run: |
+          arduino-cli core update-index --additional-urls file://$GITHUB_WORKSPACE/package_esp32_index.json
+          arduino-cli core install ESP32:ESP32 --additional-urls file://$GITHUB_WORKSPACE/package_esp32_index.json
+
+      - name: Compile Sketch
+        run: |
+          ARDUINO_DIRECTORIES_USER=$GITHUB_WORKSPACE arduino-cli compile \
+            -b ESP32:ESP32:ESP:pnum=NUCLEO_F767ZI,upload_method=MassStorage,xserial=generic,usb=none,xusb=FS,opt=osstd,rtlib=nano \
+            -e \
+            --output-dir ./build \
+            Hello_World.ino
+
+      - name: Upload Binary Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Arduino-Binary-${{ github.sha }}
+          path: |
+            ./build/*.bin
+            ./build/*.elf
+            ./build/*.hex
+          retention-days: 30
+          if-no-files-found: error
