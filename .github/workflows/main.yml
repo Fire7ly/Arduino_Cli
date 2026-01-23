@@ -35,6 +35,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
+    
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout Repository
