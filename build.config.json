@@ -1,6 +1,6 @@
 {
   "board": "esp32",
-  "board_version": "latest",
+  "board_version": "2.0.6",
   "sketch_path": ".",
   "artifact_name": "Arduino-Binary",
   "retention_days": 30
