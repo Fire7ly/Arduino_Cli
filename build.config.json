@@ -5,7 +5,7 @@
       "versions": ["2.0.6", "latest"],
       "settings": {
         "version": "0.0.1",
-        "release_enabled": true
+        "release_enabled": false
       }
     },
     {
