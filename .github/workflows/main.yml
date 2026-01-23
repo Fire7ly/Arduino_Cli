@@ -96,6 +96,7 @@ jobs:
       - name: Compile Sketch
         id: compile
         run: |
+          set -o pipefail
           START_TIME=$(date +%s)
           mkdir -p ./build
           
@@ -111,8 +112,20 @@ jobs:
 
       - name: Rename Binary
         run: |
-          # Rename the binary to match the artifact name for release clarity
-          mv ./build/*.bin "./build/${{ steps.config.outputs.artifact }}.bin"
+          # Find the main binary file (.bin or .hex)
+          BINARY_FILE=$(find ./build -maxdepth 1 -name "*.bin" -o -name "*.hex" -o -name "*.uf2" | head -n 1)
+          
+          if [ -z "$BINARY_FILE" ]; then
+            echo "❌ No binary file found! Compilation might have failed."
+            ls -la ./build/
+            exit 1
+          fi
+          
+          EXTENSION="${BINARY_FILE##*.}"
+          NEW_NAME="./build/${{ steps.config.outputs.artifact }}.$EXTENSION"
+          
+          echo "📦 Renaming $BINARY_FILE -> $NEW_NAME"
+          mv "$BINARY_FILE" "$NEW_NAME"
 
 
       - name: Generate Build Info
@@ -145,8 +158,9 @@ jobs:
           name: ${{ steps.config.outputs.artifact }}
           path: |
             ./build/*.bin
-            ./build/*.elf
             ./build/*.hex
+            ./build/*.uf2
+            ./build/*.elf
             ./build/BUILD_INFO.txt
             ./build/build_info.json
             ./build/compile_log.txt
@@ -159,7 +173,10 @@ jobs:
         with:
           tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('v{0}', matrix.release_version) }}
           name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('Release v{0}', matrix.release_version) }}
-          files: ./build/${{ steps.config.outputs.artifact }}.bin
+          files: |
+            ./build/*.bin
+            ./build/*.hex
+            ./build/*.uf2
           draft: false
           prerelease: false
 
