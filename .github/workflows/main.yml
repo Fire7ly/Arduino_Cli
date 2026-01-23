@@ -129,6 +129,11 @@ jobs:
           
           echo "📦 Renaming $BINARY_FILE -> $NEW_NAME"
           mv "$BINARY_FILE" "$NEW_NAME"
+          
+          # Zip the binary
+          ZIP_NAME="./build/${{ steps.config.outputs.artifact }}.zip"
+          echo "🗜️ Zipping to $ZIP_NAME..."
+          zip -j "$ZIP_NAME" "$NEW_NAME"
 
 
       - name: Generate Build Info
@@ -160,10 +165,7 @@ jobs:
         with:
           name: ${{ steps.config.outputs.artifact }}
           path: |
-            ./build/*.bin
-            ./build/*.hex
-            ./build/*.uf2
-            ./build/*.elf
+            ./build/*.zip
             ./build/BUILD_INFO.txt
             ./build/build_info.json
             ./build/compile_log.txt
@@ -176,10 +178,7 @@ jobs:
         with:
           tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('v{0}', matrix.release_version) }}
           name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('Release v{0}', matrix.release_version) }}
-          files: |
-            ./build/*.bin
-            ./build/*.hex
-            ./build/*.uf2
+          files: ./build/${{ steps.config.outputs.artifact }}.zip
           draft: false
           prerelease: false
 
