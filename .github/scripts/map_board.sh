@@ -3,11 +3,11 @@
 
 set -e
 
-# Read user's simple config
-BOARD=$(jq -r '.board' build.config.json)
-BOARD_VERSION=$(jq -r '.board_version // "latest"' build.config.json)
-ARTIFACT=$(jq -r '.artifact_name // "Arduino-Binary"' build.config.json)
-RETENTION=$(jq -r '.retention_days // 30' build.config.json)
+# Read config (support env vars or fallback to file)
+BOARD="${BOARD:-$(jq -r '.board' build.config.json)}"
+BOARD_VERSION="${BOARD_VERSION:-$(jq -r '.board_version // "latest"' build.config.json)}"
+ARTIFACT="${ARTIFACT_NAME:-$(jq -r '.artifact_name // "Arduino-Binary"' build.config.json)}"
+RETENTION="${RETENTION_DAYS:-$(jq -r '.retention_days // 30' build.config.json)}"
 
 # Convert friendly name to lowercase for matching (remove spaces, hyphens, underscores)
 BOARD_LOWER=$(echo "$BOARD" | tr '[:upper:]' '[:lower:]' | tr -d ' ' | tr -d '_' | tr -d '-')

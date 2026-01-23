@@ -6,9 +6,27 @@ on:
       - main
 
 jobs:
-  build:
-    name: Build Arduino Sketch
+  setup:
+    name: Prepare Build Matrix
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Generate Matrix
+        id: set-matrix
+        run: |
+          python3 .github/scripts/generate_matrix.py
+
+  build:
+    name: Build ${{ matrix.board }} @ ${{ matrix.version }}
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
 
     steps:
       - name: Checkout Repository
@@ -22,6 +40,11 @@ jobs:
 
       - name: Map Board Configuration
         id: config
+        env:
+          BOARD: ${{ matrix.board }}
+          BOARD_VERSION: ${{ matrix.version }}
+          ARTIFACT_NAME: ${{ matrix.artifact_name }}
+          RETENTION_DAYS: ${{ matrix.retention_days }}
         run: |
           chmod +x .github/scripts/map_board.sh
           .github/scripts/map_board.sh
@@ -93,7 +116,7 @@ jobs:
             "${{ steps.install.outputs.platform_version }}" \
             "${{ steps.config.outputs.platform_url }}" \
             "${{ steps.install.outputs.cli_version }}" \
-            "${{ steps.config.outputs.artifact }}-${{ github.sha }}" \
+            "${{ steps.config.outputs.artifact }}" \
             "${{ steps.config.outputs.retention }}" \
             "${{ steps.config.outputs.board_version }}"
 
@@ -105,7 +128,7 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.config.outputs.artifact }}-${{ github.sha }}
+          name: ${{ steps.config.outputs.artifact }}
           path: |
             ./build/*.bin
             ./build/*.elf

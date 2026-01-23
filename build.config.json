@@ -1,7 +1,15 @@
 {
-  "board": "esp32",
-  "board_version": "2.0.6",
+  "targets": [
+    {
+      "board": "esp32",
+      "versions": ["2.0.6", "latest"]
+    },
+    {
+      "board": "esp8266",
+      "versions": ["latest"]
+    }
+  ],
   "sketch_path": ".",
-  "artifact_name": "Arduino-Binary",
+  "artifact_prefix": "Arduino-Binary",
   "retention_days": 30
 }
