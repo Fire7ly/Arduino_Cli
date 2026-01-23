@@ -83,6 +83,45 @@ git push
 
 ---
 
+## 🏷️ How To Release (Publish)
+
+When you are ready to "release" a version (like `v1.0.0`):
+
+### Option 1: The Easy Way (GitHub Website) 🌐
+
+1. Go to your repository on GitHub.
+2. Click **"Releases"** (on the right side).
+3. Click **"Draft a new release"**.
+4. Click **"Choose a tag"** > Type `v1.0.0` > Click **"Create new tag"**.
+5. Click **"Publish release"**.
+   - The robot will wake up, build your code, and add the files to this release automatically!
+
+### Option 2: The Hacker Way (Command Line) 💻
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+### Option 3: Config File Release (No Tags!) ⚙️
+
+1. Open `build.config.json`
+2. Add a `settings` block to the board you want to release:
+   ```json
+   {
+     "board": "esp32",
+     "versions": ["latest"],
+     "settings": {
+       "version": "0.0.1",
+       "release_enabled": true
+     }
+   }
+   ```
+3. Push your changes!
+   - The robot will check each board. If `release_enabled` is true, it creates/updates the release `v0.0.1` with that board's binary.
+
+---
+
 ## 📋 Supported Boards
 
 | Name to type | Board Description |

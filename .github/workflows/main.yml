@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*'
     paths-ignore:
       - 'README.md'
       - '.vscode/**'
@@ -18,6 +20,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Generate Matrix
         id: set-matrix
@@ -105,6 +109,12 @@ jobs:
           COMPILE_TIME=$((END_TIME - START_TIME))
           echo "compile_time=${COMPILE_TIME}s" >> $GITHUB_OUTPUT
 
+      - name: Rename Binary
+        run: |
+          # Rename the binary to match the artifact name for release clarity
+          mv ./build/*.bin "./build/${{ steps.config.outputs.artifact }}.bin"
+
+
       - name: Generate Build Info
         run: |
           chmod +x .github/scripts/generate_build_info.sh
@@ -142,3 +152,14 @@ jobs:
             ./build/compile_log.txt
           retention-days: ${{ steps.config.outputs.retention }}
           if-no-files-found: error
+
+      - name: Release Firmware
+        if: matrix.release_enabled == 'true' || startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('v{0}', matrix.release_version) }}
+          name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('Release v{0}', matrix.release_version) }}
+          files: ./build/${{ steps.config.outputs.artifact }}.bin
+          draft: false
+          prerelease: false
+

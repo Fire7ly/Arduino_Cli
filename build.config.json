@@ -2,11 +2,19 @@
   "targets": [
     {
       "board": "esp32",
-      "versions": ["2.0.6", "latest"]
+      "versions": ["2.0.6", "latest"],
+      "settings": {
+        "version": "0.0.1",
+        "release_enabled": true
+      }
     },
     {
       "board": "esp8266",
-      "versions": ["latest"]
+      "versions": ["latest"],
+      "settings": {
+        "version": "0.0.1",
+        "release_enabled": false
+      }
     }
   ],
   "sketch_path": ".",
