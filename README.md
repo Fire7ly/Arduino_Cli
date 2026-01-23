@@ -2,6 +2,8 @@
 
 This project automatically builds your Arduino code for **MANY** boards at once!
 
+<!-- Test change: this update should not trigger a build -->
+
 ---
 
 ## 📖 What Does This Project Do?
